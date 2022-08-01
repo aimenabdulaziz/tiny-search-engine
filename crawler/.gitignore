@@ -1,0 +1,4 @@
+data
+*.o
+.DS_Store
+crawler

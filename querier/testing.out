@@ -1,0 +1,205 @@
+chmod a+x testing.sh
+bash -v ./testing.sh
+#!/bin/bash
+# testing.sh - perform automatic tests for querier to confirm it works as intended
+#
+# usage: run 'make test' and redirect to a directory as needed 
+#
+# Aimen Abdulaziz, Spring 2022
+
+# make querier and fuzzquery
+make
+make[1]: Entering directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/querier'
+gcc -Wall -pedantic -std=c11 -ggdb  -I../common -I../libcs50 querier.c ../common/common.a ../libcs50/libcs50-given.a -o querier 
+make[1]: Leaving directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/querier'
+make fuzzquery
+make[1]: Entering directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/querier'
+gcc -Wall -pedantic -std=c11 -ggdb  -I../common -I../libcs50 fuzzquery.c ../common/common.a ../libcs50/libcs50-given.a -o fuzzquery 
+make[1]: Leaving directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/querier'
+
+# directory for crawler and indexer outputs provided by CS50
+dir=/thayerfs/courses/22spring/cosc050/cs50tse/tse-output
+
+################ invalid arguments ################
+# incorrect number of arguments 
+./querier $dir/letters-depth-5 $dir/letters-index-5 hello
+usage: ./querier pageDirectory indexFilename
+
+# non-crawler produced directory (invalid arg1)
+./querier $dir/hello $dir/letters-index-5
+argument 1: '/thayerfs/courses/22spring/cosc050/cs50tse/tse-output/hello' is not a a crawler produced directory
+
+# file is not readable (invalid arg2)
+./querier $dir/letters-depth-5 $dir/hello
+argument 2: '/thayerfs/courses/22spring/cosc050/cs50tse/tse-output/hello' file name does not exist or is not readable
+
+################ query syntax ################
+./querier $dir/letters-depth-5 $dir/letters-index-5 < queries.test
+Query: end with and
+Error: 'and' cannot be last
+Query: end with or
+Error: 'or' cannot be last
+Query: consecutive or or
+Error: 'or' cannot be adjacent with each other
+Query: consecutive and and
+Error: 'and' cannot be adjacent with each other
+Query: adjacent and or
+Error: 'and' and 'or' cannot appear consecutive to each other
+Query: reverse adjacent or and
+Error: 'or' and 'and' cannot appear consecutive to each other
+Error: bad character '-' in query.
+Query: computer science
+No documents match.
+-----------------------------------------------
+Query: computer science
+No documents match.
+-----------------------------------------------
+Query: playground
+Matches 1 documents (ranked):
+score	1 doc	1: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+-----------------------------------------------
+Query: fast and computational
+No documents match.
+-----------------------------------------------
+Query: computational or fast and breadth
+Matches 1 documents (ranked):
+score	1 doc	9: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+-----------------------------------------------
+Query: computational
+Matches 1 documents (ranked):
+score	1 doc	9: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+-----------------------------------------------
+
+################ randomly generated queries by fuzzQuery ################
+./fuzzquery $dir/letters-index-3 10 2 | ./querier $dir/letters-depth-3 $dir/letters-index-3
+./fuzzquery: generating 10 queries from 15 words
+Query: tastiness
+No documents match.
+-----------------------------------------------
+Query: home biology or tse or this or home this
+Matches 2 documents (ranked):
+score	3 doc	1: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+score	1 doc	6: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+-----------------------------------------------
+Query: eniac eniac or home
+Matches 6 documents (ranked):
+score	2 doc	4: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+score	2 doc	1: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+score	1 doc	2: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+score	1 doc	3: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+score	1 doc	5: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+score	1 doc	6: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+-----------------------------------------------
+Query: for and the home this
+Matches 1 documents (ranked):
+score	1 doc	1: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+-----------------------------------------------
+Query: luke
+No documents match.
+-----------------------------------------------
+Query: tse computational or the computational or eniac home
+Matches 1 documents (ranked):
+score	1 doc	4: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+-----------------------------------------------
+Query: bifurcate and first
+No documents match.
+-----------------------------------------------
+Query: oks and tse for or undeclared or computational
+Matches 1 documents (ranked):
+score	1 doc	6: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+-----------------------------------------------
+Query: home first and playground page page terabits
+No documents match.
+-----------------------------------------------
+Query: embroiders this and search or smoker search
+No documents match.
+-----------------------------------------------
+./fuzzquery $dir/wikipedia-index-1 10 2 | ./querier $dir/wikipedia-depth-1 $dir/wikipedia-index-1
+./fuzzquery: generating 10 queries from 6506 words
+Query: tastiness
+No documents match.
+-----------------------------------------------
+Query: mcp roughly or endowment or linker or watchcreations activities
+Matches 3 documents (ranked):
+score	3 doc	4: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Dartmouth_College.html
+score	1 doc	6: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/C_(programming_language).html
+score	1 doc	5: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Unix.html
+-----------------------------------------------
+Query: sunrisedd priorities or shotput
+Matches 1 documents (ranked):
+score	1 doc	4: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Dartmouth_College.html
+-----------------------------------------------
+Query: sized and aziz details funding
+No documents match.
+-----------------------------------------------
+Query: luke
+No documents match.
+-----------------------------------------------
+Query: brings water or contentious andrew or bingen stringent
+No documents match.
+-----------------------------------------------
+Query: bifurcate and line
+No documents match.
+-----------------------------------------------
+Query: oks and general war or undeclared or remained
+Matches 1 documents (ranked):
+score	1 doc	6: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/C_(programming_language).html
+-----------------------------------------------
+Query: memnode atomic and hundred otherunix interconnecting terabits
+No documents match.
+-----------------------------------------------
+Query: embroiders runs and bringing or smoker carnival
+No documents match.
+-----------------------------------------------
+
+################ valgrind ################
+valgrind --leak-check=full --show-leak-kinds=all ./querier $dir/toscrape-depth-2 $dir/toscrape-index-2 < queries.test
+==1661== Memcheck, a memory error detector
+==1661== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1661== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==1661== Command: ./querier /thayerfs/courses/22spring/cosc050/cs50tse/tse-output/toscrape-depth-2 /thayerfs/courses/22spring/cosc050/cs50tse/tse-output/toscrape-index-2
+==1661== 
+Query: end with and
+Error: 'and' cannot be last
+Query: end with or
+Error: 'or' cannot be last
+Query: consecutive or or
+Error: 'or' cannot be adjacent with each other
+Query: consecutive and and
+Error: 'and' cannot be adjacent with each other
+Query: adjacent and or
+Error: 'and' and 'or' cannot appear consecutive to each other
+Query: reverse adjacent or and
+Error: 'or' and 'and' cannot appear consecutive to each other
+Error: bad character '-' in query.
+Query: computer science
+Matches 1 documents (ranked):
+score	4 doc	380: http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/algorithms-to-live-by-the-computer-science-of-human-decisions_880/index.html
+-----------------------------------------------
+Query: computer science
+Matches 1 documents (ranked):
+score	4 doc	380: http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/algorithms-to-live-by-the-computer-science-of-human-decisions_880/index.html
+-----------------------------------------------
+Query: playground
+Matches 1 documents (ranked):
+score	1 doc	437: http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/tuesday-nights-in-1980_870/index.html
+-----------------------------------------------
+Query: fast and computational
+No documents match.
+-----------------------------------------------
+Query: computational or fast and breadth
+No documents match.
+-----------------------------------------------
+Query: computational
+No documents match.
+-----------------------------------------------
+==1661== 
+==1661== HEAP SUMMARY:
+==1661==     in use at exit: 0 bytes in 0 blocks
+==1661==   total heap usage: 153,542 allocs, 153,542 frees, 3,295,910 bytes allocated
+==1661== 
+==1661== All heap blocks were freed -- no leaks are possible
+==1661== 
+==1661== For counts of detected and suppressed errors, rerun with: -v
+==1661== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+# bash -v ./testing.sh &> testing.out # uncommment for automatic redirection to testing.out

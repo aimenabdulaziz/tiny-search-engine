@@ -1,0 +1,308 @@
+chmod a+x testing.sh
+bash -v ./testing.sh
+#!/bin/bash
+# testing.sh - perform tests for crawler to confirm it works as intended
+#
+# usage: run 'make test' 
+#
+# the output of the file will be redirected to testing.out
+#
+# Aimen Abdulaziz, Spring 2022
+
+# make crawler
+make
+make[1]: Entering directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/crawler'
+gcc -Wall -pedantic -std=c11 -ggdb  -I../common -I../libcs50 crawler.c ../common/common.a ../libcs50/libcs50-given.a -o crawler 
+make[1]: Leaving directory '/thayerfs/home/f0055hs/cs50/labs/tse-aimenabdulaziz/crawler'
+
+# make directory for writing the crawler output
+rm -rf data # delete if the directory exists
+mkdir -p data/test
+for i in {1..5}; do
+    mkdir -p "data/test$i"
+done
+
+# incorrect number of arguments 
+echo "test 1"
+test 1
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test 6 1
+usage: ./crawler seedURL pageDirectory maxDepth
+
+# non-internal seedURL
+echo "test 2"
+test 2
+./crawler https://www.google.com/ data/test 1
+argument 1: 'https://www.google.com/' is not a valid internal URL
+
+# non-existent directory
+echo "test 3"
+test 3
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/non 6
+argument 2: 'data/non' file name does not exist or is not writeable
+
+# invalid integer for depth
+echo "test 4"
+test 4
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test 1a
+argument 3: '1a' is not a valid integer
+
+# invalid depth (out of the range between 0-10)
+echo "test 5"
+test 5
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test -1
+argument 3: '-1' max depth must be greater than 0 and less than 10
+
+echo "test 6"
+test 6
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test 12
+argument 3: '12' max depth must be greater than 0 and less than 10
+
+# non-existent server seedURL
+echo "test 7"
+test 7
+./crawler http://aimen.com data/test 6
+argument 1: 'http://aimen.com' is not a valid internal URL
+
+# valid server but non-existent page 
+echo "test 8"
+test 8
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/aimen.html data/test 7
+failed to fetch http://cs50tse.cs.dartmouth.edu/tse/letters/aimen.html
+
+# crawl a valid internal seedURL that has duplicate and external URLs
+echo "test 9"
+test 9
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test 2
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0  Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1   Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1      Found: https://en.wikipedia.org/wiki/Algorithm
+ 1   IgnExtrn: https://en.wikipedia.org/wiki/Algorithm
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1    IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+
+# crawl to depth 5 
+echo "test 10"
+test 10
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test1 5
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0  Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1   Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1      Found: https://en.wikipedia.org/wiki/Algorithm
+ 1   IgnExtrn: https://en.wikipedia.org/wiki/Algorithm
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1    IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 2    Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 2       Found: https://en.wikipedia.org/wiki/Breadth-first_search
+ 2    IgnExtrn: https://en.wikipedia.org/wiki/Breadth-first_search
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 2       Added: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2       Added: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 2       Added: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 3     Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 3        Found: https://en.wikipedia.org/wiki/ENIAC
+ 3     IgnExtrn: https://en.wikipedia.org/wiki/ENIAC
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 3        Added: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 3        Added: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 4       Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 4      Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 4         Found: https://en.wikipedia.org/wiki/Graph_traversal
+ 4      IgnExtrn: https://en.wikipedia.org/wiki/Graph_traversal
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4         Added: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 4       IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 5        Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4       Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 4      Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 4         Found: https://en.wikipedia.org/wiki/Fast_Fourier_transform
+ 4      IgnExtrn: https://en.wikipedia.org/wiki/Fast_Fourier_transform
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4       IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 4       IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 3     Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 3        Found: https://en.wikipedia.org/wiki/Depth-first_search
+ 3     IgnExtrn: https://en.wikipedia.org/wiki/Depth-first_search
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 3     Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 3        Found: https://en.wikipedia.org/wiki/Computational_biology
+ 3     IgnExtrn: https://en.wikipedia.org/wiki/Computational_biology
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+
+# crawl from a page at depth 1 of http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+echo "test 11"
+test 11
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/A.html data/test2 5
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 0  Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 0     Found: https://en.wikipedia.org/wiki/Algorithm
+ 0  IgnExtrn: https://en.wikipedia.org/wiki/Algorithm
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1   Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1    IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1   Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Found: https://en.wikipedia.org/wiki/Breadth-first_search
+ 1   IgnExtrn: https://en.wikipedia.org/wiki/Breadth-first_search
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1    IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 2    Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/E.html
+ 2       Found: https://en.wikipedia.org/wiki/ENIAC
+ 2    IgnExtrn: https://en.wikipedia.org/wiki/ENIAC
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 2       Added: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 2       Added: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 3     Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/G.html
+ 3        Found: https://en.wikipedia.org/wiki/Graph_traversal
+ 3     IgnExtrn: https://en.wikipedia.org/wiki/Graph_traversal
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 3        Added: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 4       Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4      Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 4         Found: https://en.wikipedia.org/wiki/Huffman_coding
+ 4      IgnExtrn: https://en.wikipedia.org/wiki/Huffman_coding
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 4       IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 4         Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 4       IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 3     Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/F.html
+ 3        Found: https://en.wikipedia.org/wiki/Fast_Fourier_transform
+ 3     IgnExtrn: https://en.wikipedia.org/wiki/Fast_Fourier_transform
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/H.html
+ 3        Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 3      IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2    Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2       Found: https://en.wikipedia.org/wiki/Depth-first_search
+ 2    IgnExtrn: https://en.wikipedia.org/wiki/Depth-first_search
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 2    Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/C.html
+ 2       Found: https://en.wikipedia.org/wiki/Computational_biology
+ 2    IgnExtrn: https://en.wikipedia.org/wiki/Computational_biology
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/D.html
+ 2       Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+
+# crawl the cs50 Wikipedia playground at depth 1
+echo "test 12"
+test 12
+./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/index.html data/test3 1
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/index.html
+ 0  Scanning: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/index.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./Computer_science.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Computer_science.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./C_(programming_language).html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/C_(programming_language).html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./Unix.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Unix.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./Dartmouth_College.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Dartmouth_College.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./Hash_table.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Hash_table.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/./Linked_list.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Linked_list.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Linked_list.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Hash_table.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Dartmouth_College.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Unix.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/C_(programming_language).html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/wikipedia/Computer_science.html
+
+# crawl the cs50 toscrape playground at depth 0
+echo "test 13"
+test 13
+./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/index.html data/test4 0
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/toscrape/index.html
+
+# valgrind to check memory leak
+echo "valgrind test"
+valgrind test
+valgrind --leak-check=full --show-leak-kinds=all ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test5 2
+==38238== Memcheck, a memory error detector
+==38238== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==38238== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==38238== Command: ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html data/test5 2
+==38238== 
+ 0   Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0  Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 0     Found: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 0     Added: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1    Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1   Scanning: http://cs50tse.cs.dartmouth.edu/tse/letters/A.html
+ 1      Found: https://en.wikipedia.org/wiki/Algorithm
+ 1   IgnExtrn: https://en.wikipedia.org/wiki/Algorithm
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Added: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+ 1      Found: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 1    IgnDupl: http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
+ 2     Fetched: http://cs50tse.cs.dartmouth.edu/tse/letters/B.html
+==38238== 
+==38238== HEAP SUMMARY:
+==38238==     in use at exit: 0 bytes in 0 blocks
+==38238==   total heap usage: 626 allocs, 626 frees, 123,973 bytes allocated
+==38238== 
+==38238== All heap blocks were freed -- no leaks are possible
+==38238== 
+==38238== For counts of detected and suppressed errors, rerun with: -v
+==38238== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+# crawl the cs50 Wikipedia playground at depth 2
+# WARNING: this test takes approximately 45 minutes 
+# uncomment if you want to run
+# ./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/index.html data/test6 2 
+# bash -v ./testing.sh &> testing.out # uncommment for automatic redirection to testing.out
