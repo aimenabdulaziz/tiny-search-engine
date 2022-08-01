@@ -10,7 +10,6 @@ This repository consists of a search engine that crawls webpages, indexes the co
 The Tiny Search Engine consists of three major components: `crawler`, `indexer`, and `querier`. The `common` directory contains common modules shared by the three components. This repository has the following files:
 ```bash
 ├── common
-│   ├── common.a
 │   ├── index.c
 │   ├── index.h
 │   ├── Makefile
